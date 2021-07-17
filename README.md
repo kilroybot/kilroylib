@@ -27,7 +27,6 @@ $ bash miniconda.sh && exec bash
 (base) $ conda activate kilroylib
 (kilroylib) $ cd kilroylib
 (kilroylib) $ poetry install --extras dev
-(kilroylib) $ kilroylib
 ```
 
 ## Quickerstart
@@ -36,7 +35,6 @@ If you just want to try it out and don't care about polluting your environment:
 
 ```sh
 $ python3 -m pip install ./kilroylib
-$ kilroylib
 ```
 
 ## Environment management
@@ -136,11 +134,26 @@ Other people only need to run ```poetry install``` to adjust to the incoming cha
 ## Continuous Integration
 
 When you push changes to remote, different Github Actions run to ensure project consistency.
-There are defined workflows for testing on different platforms and deploying docs to Github Pages.
+There are defined workflows for:
+
+- testing on different platforms
+- deploying docs to Github Pages
+- drafting release notes
+- uploading releases to PyPI
 
 For more info see the files in ```.github/workflows``` directory and ```Actions``` tab on Github.
 
 Generally if you see a red mark next to your commit on Github or a failing status on badges in ```README``` it means the commit broke something (or workflows themselves are broken).
+
+## Releases
+
+Every time you merge a pull request into main, a draft release is automatically updated, adding the pull request to changelog.
+Changes can be categorized by using labels. You can configure that in ```.github/release-drafter.yml``` file.
+
+Every time you publish a release, the package is uploaded to PyPI with version taken from release tag (ignoring the version in source code).
+You should store your PyPI token in ```PYPI_TOKEN``` secret.
+
+
 
 ## Jupyter
 
