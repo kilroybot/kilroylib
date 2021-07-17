@@ -1,3 +1,3 @@
-# Usage example
+# Usage
 
 TODO

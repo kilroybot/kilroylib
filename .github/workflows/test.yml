@@ -63,7 +63,7 @@ jobs:
             ${{ env.CONDA_CACHE_DIR }}
             ${{ env.POETRY_CACHE_DIR }}
             ${{ env.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-pkgs-${{ env.CACHE_NUMBER }} }}
+          key: ${{ runner.os }}-pkgs-${{ env.CACHE_NUMBER }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
