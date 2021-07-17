@@ -1,187 +1,27 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   width="500"
-   height="500"
-   viewBox="0 0 132.29166 132.29167"
-   version="1.1"
-   id="svg5"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
-   sodipodi:docname="logo-inverted-white.svg"
-   inkscape:export-filename="/home/scoutboy/Desktop/repos/kilroy/assets/logos/png/logo-inverted-white.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview7"
-     pagecolor="#ffffff"
-     bordercolor="#999999"
-     borderopacity="1"
-     inkscape:pageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="0"
-     inkscape:document-units="mm"
-     showgrid="false"
-     units="px"
-     width="1000px"
-     inkscape:snap-bbox="true"
-     inkscape:bbox-paths="true"
-     inkscape:bbox-nodes="true"
-     inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:snap-bbox-midpoints="true"
-     inkscape:object-paths="true"
-     inkscape:snap-intersection-paths="true"
-     inkscape:snap-smooth-nodes="true"
-     inkscape:snap-midpoints="true"
-     inkscape:snap-object-midpoints="true"
-     inkscape:snap-center="true"
-     inkscape:snap-text-baseline="true"
-     inkscape:snap-page="true"
-     inkscape:snap-global="true"
-     inkscape:zoom="1"
-     inkscape:cx="259.49999"
-     inkscape:cy="284.99999"
-     inkscape:window-width="1920"
-     inkscape:window-height="1010"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer3" />
-  <defs
-     id="defs2">
-    <inkscape:path-effect
-       effect="powermask"
-       id="path-effect3161"
-       is_visible="true"
-       lpeversion="1"
-       uri="#mask-powermask-path-effect3161"
-       invert="false"
-       hide_mask="false"
-       background="true"
-       background_color="#ffffffff" />
-    <mask
-       maskUnits="userSpaceOnUse"
-       id="mask-powermask-path-effect3161">
-      <path
-         id="mask-powermask-path-effect3161_box"
-         style="fill:#ffffff;fill-opacity:1"
-         d="M -0.99999237,-0.99999237 H 133.29166 V 133.29166 H -0.99999237 Z" />
-      <g
-         id="g3159"
-         clip-path="none"
-         style="stroke-width:0.999999">
-        <path
-           id="path3139"
-           style="fill:none;stroke:#000000;stroke-width:9.99999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
-           d="m 419.24807,250.00001 h 30.75196"
-           transform="scale(0.26458333)" />
-        <path
-           id="path3141"
-           style="fill:none;stroke:#000000;stroke-width:9.99999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
-           d="M 273.44727,249.99998 375.7344,250"
-           transform="scale(0.26458333)" />
-        <path
-           id="path3143"
-           style="fill:none;stroke:#000000;stroke-width:9.99999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
-           d="M 124.20703,250 H 226.55079"
-           transform="scale(0.26458333)" />
-        <path
-           id="path3145"
-           style="fill:none;stroke:#000000;stroke-width:9.99999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
-           d="M 49.999997,250.00001 80.794921,250"
-           transform="scale(0.26458333)" />
-        <path
-           style="fill:none;stroke:#000000;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-           id="path3147"
-           sodipodi:type="arc"
-           sodipodi:cx="66.145836"
-           sodipodi:cy="66.145836"
-           sodipodi:rx="25.135418"
-           sodipodi:ry="25.135418"
-           sodipodi:start="3.1470276"
-           sodipodi:end="6.2638027"
-           sodipodi:open="true"
-           sodipodi:arc-type="arc"
-           d="M 41.010789,66.009227 A 25.135418,25.135418 0 0 1 65.970547,41.011029 25.135418,25.135418 0 0 1 91.276532,65.658676" />
-        <path
-           id="path3149"
-           style="fill:none;stroke:#000000;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round"
-           d="m 71.257515,59.640666 c 7.453621,33.863896 -17.67939,33.863896 -10.223358,2e-6"
-           sodipodi:nodetypes="cc" />
-        <circle
-           style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-           id="circle3151"
-           cx="53.578125"
-           cy="62.022053"
-           r="4.1237836"
-           d="m 57.701909,62.022053 a 4.1237836,4.1237836 0 0 1 -4.123784,4.123783 4.1237836,4.1237836 0 0 1 -4.123784,-4.123783 4.1237836,4.1237836 0 0 1 4.123784,-4.123784 4.1237836,4.1237836 0 0 1 4.123784,4.123784 z" />
-        <circle
-           style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-           id="circle3153"
-           cx="78.711143"
-           cy="62.022053"
-           r="4.1237836"
-           d="m 82.834927,62.022053 a 4.1237836,4.1237836 0 0 1 -4.123784,4.123783 4.1237836,4.1237836 0 0 1 -4.123783,-4.123783 4.1237836,4.1237836 0 0 1 4.123783,-4.123784 4.1237836,4.1237836 0 0 1 4.123784,4.123784 z" />
-        <circle
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-           id="circle3155"
-           cx="27.1201"
-           cy="66.009224"
-           r="5.756321"
-           d="M 32.876421,66.009224 A 5.756321,5.756321 0 0 1 27.1201,71.765545 5.756321,5.756321 0 0 1 21.363779,66.009224 5.756321,5.756321 0 0 1 27.1201,60.252903 5.756321,5.756321 0 0 1 32.876421,66.009224 Z" />
-        <circle
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-           id="circle3157"
-           cx="105.16954"
-           cy="66.145836"
-           r="5.756321"
-           d="m 110.92586,66.145836 a 5.756321,5.756321 0 0 1 -5.75632,5.756321 5.756321,5.756321 0 0 1 -5.756321,-5.756321 5.756321,5.756321 0 0 1 5.756321,-5.756321 5.756321,5.756321 0 0 1 5.75632,5.756321 z" />
-      </g>
-    </mask>
-    <filter
-       id="mask-powermask-path-effect3161_inverse"
-       inkscape:label="filtermask-powermask-path-effect3161"
-       style="color-interpolation-filters:sRGB"
-       height="100"
-       width="100"
-       x="-50"
-       y="-50">
-      <feColorMatrix
-         id="mask-powermask-path-effect3161_primitive1"
-         values="1"
-         type="saturate"
-         result="fbSourceGraphic" />
-      <feColorMatrix
-         id="mask-powermask-path-effect3161_primitive2"
-         values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0 "
-         in="fbSourceGraphic" />
-    </filter>
-  </defs>
-  <g
-     inkscape:groupmode="layer"
-     id="layer3"
-     inkscape:label="Background"
-     style="display:inline"
-     sodipodi:insensitive="true">
-    <circle
-       style="fill:#ffffff;fill-opacity:1;stroke-width:2.64583;stroke-linecap:round;stroke-linejoin:round"
-       id="path1175"
-       clip-path="none"
-       mask="url(#mask-powermask-path-effect3161)"
-       inkscape:path-effect="#path-effect3161"
-       sodipodi:type="arc"
-       sodipodi:cx="66.145836"
-       sodipodi:cy="66.145836"
-       sodipodi:rx="66.145828"
-       sodipodi:ry="66.145828"
-       d="M 132.29166,66.145836 A 66.145828,66.145828 0 0 1 66.145836,132.29166 66.145828,66.145828 0 0 1 7.6293945e-6,66.145836 66.145828,66.145828 0 0 1 66.145836,7.6293945e-6 66.145828,66.145828 0 0 1 132.29166,66.145836 Z" />
-  </g>
-  <g
-     inkscape:groupmode="layer"
-     id="layer2"
-     inkscape:label="Layer 1" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500" height="500" version="1.1" viewBox="0 0 132.29 132.29" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <mask id="mask-powermask-path-effect1641" maskUnits="userSpaceOnUse">
+   <path id="mask-powermask-path-effect1641_box" d="m-1-1h134.29v134.29h-134.29z" fill="#fff"/>
+   <g>
+    <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+     <g>
+      <path transform="scale(.26458)" d="m419.25 250h30.752" stroke-width="10" style="paint-order:stroke markers fill"/>
+      <path transform="scale(.26458)" d="m273.45 250 102.29 2e-5" stroke-width="10" style="paint-order:stroke markers fill"/>
+      <path transform="scale(.26458)" d="m124.21 250h102.34" stroke-width="10" style="paint-order:stroke markers fill"/>
+      <path transform="scale(.26458)" d="m50 250 30.795-1e-5" stroke-width="10" style="paint-order:stroke markers fill"/>
+      <path d="m41.011 66.009a25.135 25.135 0 0 1 24.96-24.998 25.135 25.135 0 0 1 25.306 24.648" stroke-width="2.6458" style="paint-order:normal"/>
+     </g>
+     <path d="m71.258 59.641c7.4536 33.864-17.679 33.864-10.223 2e-6" stroke-width="2.6458"/>
+    </g>
+    <circle cx="53.578" cy="62.022" r="4.1238" style="paint-order:normal"/>
+    <circle cx="78.711" cy="62.022" r="4.1238" style="paint-order:normal"/>
+    <circle cx="27.12" cy="66.009" r="5.7563" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6458" style="paint-order:normal"/>
+    <circle cx="105.17" cy="66.146" r="5.7563" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6458" style="paint-order:normal"/>
+   </g>
+  </mask>
+ </defs>
+ <g mask="url(#mask-powermask-path-effect1641)">
+  <circle cx="66.146" cy="66.146" r="66.146" d="M 132.29201,66.146004 A 66.146004,66.146004 0 0 1 66.146004,132.29201 66.146004,66.146004 0 0 1 0,66.146004 66.146004,66.146004 0 0 1 66.146004,0 66.146004,66.146004 0 0 1 132.29201,66.146004 Z" fill="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6458"/>
+ </g>
 </svg>
