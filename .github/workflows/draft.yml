@@ -7,13 +7,13 @@ on:
       - main
     # trigger only on changes to the following files
     paths:
-      - 'kilroylib/src/**'
-      - 'kilroylib/LICENSE'
-      - 'kilroylib/README.md'
-      - 'kilroylib/poetry.lock'
-      - 'kilroylib/pyproject.toml'
-      - '.github/workflows/draft.yml'
-      - '.github/release-drafter.yml'
+      - "kilroylib/src/**"
+      - "kilroylib/LICENSE"
+      - "kilroylib/README.md"
+      - "kilroylib/poetry.lock"
+      - "kilroylib/pyproject.toml"
+      - ".github/workflows/draft.yml"
+      - ".github/release-drafter.yml"
 
 jobs:
   draft:
