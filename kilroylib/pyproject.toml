@@ -19,14 +19,14 @@ dill = "^0.3"
 
 # dev
 jupyterlab = { version = "^3.1", optional = true }
-matplotlib = { version = "^3.4", optional = true }
+kilroyplot = { version = "^0.2", optional = true }
 
 # test
 pytest = { version = "^6.2", optional = true }
 
 [tool.poetry.extras]
 # need to do it that way until poetry supports dependency groups: https://github.com/python-poetry/poetry/issues/1644
-dev = ["jupyterlab", "matplotlib", "pytest"]
+dev = ["jupyterlab", "kilroyplot", "pytest"]
 test = ["pytest"]
 
 [build-system]
