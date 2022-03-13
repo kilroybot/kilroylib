@@ -4,19 +4,19 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import (
-    Callable,
     Generic,
     Iterator,
     List,
     Optional,
-    Sequence, Type,
+    Sequence,
+    Type,
     TypeVar,
     Union,
 )
 
 from kilroylib.utils import safe_dump, safe_load
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class Dataset(ABC, Generic[T]):
@@ -35,7 +35,7 @@ class Dataset(ABC, Generic[T]):
         Returns:
             int: Number of samples in the dataset.
         """
-        return NotImplemented
+        pass
 
     @abstractmethod
     def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
@@ -49,16 +49,16 @@ class Dataset(ABC, Generic[T]):
             Union[T, Sequence[T]]: Data sample.
                 Single if index was int, sequence if index was a slice.
         """
-        return NotImplemented
+        pass
 
-    def __enter__(self) -> 'Dataset':
+    def __enter__(self) -> "Dataset":
         return self
 
     def __exit__(
-            self,
-            exctype: Optional[Type[BaseException]],
-            excinst: Optional[BaseException],
-            exctb: Optional[TracebackType]
+        self,
+        exctype: Optional[Type[BaseException]],
+        excinst: Optional[BaseException],
+        exctb: Optional[TracebackType],
     ) -> bool:
         return False  # don't suppress exceptions
 
@@ -70,10 +70,10 @@ class MemoryCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, data: Iterator[T]) -> None:
+    def __init__(self, data: Iterable[T]) -> None:
         """
         Args:
-            data (Iterator[T]): Iterator with data samples.
+            data (Iterable[T]): Iterator with data samples.
         """
         super().__init__()
         self.data = list(data)
@@ -92,10 +92,10 @@ class FileCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, data: Iterator[T]) -> None:
+    def __init__(self, data: Iterable[T]) -> None:
         """
         Args:
-            data (Iterator[T]): Iterator with data samples.
+            data (Iterable[T]): Iterator with data samples.
         """
         super().__init__()
         self.data = data
@@ -103,22 +103,15 @@ class FileCachingDataset(Dataset[T]):
         self.n_samples = self._fetch(self.data, self.tempdir.name)
 
     @staticmethod
-    def _sample_path(
-            base_dir: str,
-            index: int
-    ) -> Path:
+    def _sample_path(base_dir: str, index: int) -> Path:
         return Path(base_dir) / str(index)
 
     @staticmethod
-    def _fetch(
-            data: Iterator[T],
-            directory: str
-    ) -> int:
+    def _fetch(data: Iterable[T], directory: str) -> int:
         samples = 0
         for sample in data:
             safe_dump(
-                sample,
-                FileCachingDataset._sample_path(directory, samples)
+                sample, FileCachingDataset._sample_path(directory, samples)
             )
             samples += 1
         return samples
@@ -128,10 +121,10 @@ class FileCachingDataset(Dataset[T]):
         self.tempdir.cleanup()
 
     def __exit__(
-            self,
-            exctype: Optional[Type[BaseException]],
-            excinst: Optional[BaseException],
-            exctb: Optional[TracebackType]
+        self,
+        exctype: Optional[Type[BaseException]],
+        excinst: Optional[BaseException],
+        exctb: Optional[TracebackType],
     ) -> bool:
         self.free()
         return False  # don't suppress exceptions
@@ -157,17 +150,16 @@ class DatasetFactory(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def create(self, iterator_fn: Callable[[], Iterator[T]]) -> Dataset[T]:
+    def create(self, data: Iterable[T]) -> Dataset[T]:
         """Creates Dataset from iterator.
 
         Args:
-            iterator_fn (Callable[[], Iterator[T]]): Parameterless function
-                that returns an iterator with data samples.
+            data (Iterable[T]): iterable with data samples.
 
         Returns:
             Dataset[T]: Instance of Dataset created from given iterator.
         """
-        return NotImplemented
+        pass
 
 
 class MemoryCachingDatasetFactory(DatasetFactory[T]):
@@ -177,8 +169,8 @@ class MemoryCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, iterator_fn: Callable[[], Iterator[T]]) -> Dataset[T]:
-        return MemoryCachingDataset(iterator_fn())
+    def create(self, data: Iterable[T]) -> Dataset[T]:
+        return MemoryCachingDataset(data)
 
 
 class FileCachingDatasetFactory(DatasetFactory[T]):
@@ -188,8 +180,8 @@ class FileCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, iterator_fn: Callable[[], Iterator[T]]) -> Dataset[T]:
-        return FileCachingDataset(iterator_fn())
+    def create(self, data: Iterable[T]) -> Dataset[T]:
+        return FileCachingDataset(data)
 
 
 class BatchedDataFetcher(Iterable[List[T]]):
@@ -199,11 +191,7 @@ class BatchedDataFetcher(Iterable[List[T]]):
         T (Any): Type of data sample.
     """
 
-    def __init__(
-            self,
-            dataset: Dataset[T],
-            batch_size: int
-    ) -> None:
+    def __init__(self, dataset: Dataset[T], batch_size: int) -> None:
         """
         Args:
             dataset (Dataset[T]): Dataset to fetch samples from.
@@ -236,9 +224,7 @@ class DataLoader(Iterable[List[T]]):
     DEFAULT_BATCH_SIZE = 1
 
     def __init__(
-            self,
-            dataset: Dataset[T],
-            batch_size: int = DEFAULT_BATCH_SIZE
+        self, dataset: Dataset[T], batch_size: int = DEFAULT_BATCH_SIZE
     ) -> None:
         """
         Args:

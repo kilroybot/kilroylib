@@ -12,17 +12,17 @@ repository = "https://github.com/kilroybot/kilroylib"
 documentation = "https://kilroybot.github.io/kilroylib"
 
 [tool.poetry.dependencies]
-python = "~3.9"
-kilroyshare = "~0.2"
+python = "^3.9"
+kilroyshare = "~0.3"
 numpy = "^1.21"
 dill = "^0.3"
 
 # dev
-jupyterlab = { version = "^3.1", optional = true }
+jupyterlab = { version = "^3.2", optional = true }
 kilroyplot = { version = "^0.2", optional = true }
 
 # test
-pytest = { version = "^6.2", optional = true }
+pytest = { version = "^7.0", optional = true }
 
 [tool.poetry.extras]
 # need to do it that way until poetry supports dependency groups: https://github.com/python-poetry/poetry/issues/1644

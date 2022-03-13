@@ -6,8 +6,7 @@ import dill
 
 
 def file_context(
-        file: Union[IO, str, Path],
-        mode: Optional[str] = None
+    file: Union[IO, str, Path], mode: Optional[str] = None
 ) -> ContextManager[IO]:
     """
     Gets convenient context manager for multi-type file argument.
@@ -29,10 +28,7 @@ def file_context(
     return nullcontext(file)
 
 
-def safe_dump(
-        obj: Any,
-        file: Union[BinaryIO, str, Path]
-) -> None:
+def safe_dump(obj: Any, file: Union[BinaryIO, str, Path]) -> None:
     """Dumps object to file using dill.
 
     Args:
@@ -40,13 +36,8 @@ def safe_dump(
         file (Union[BinaryIO, str, Path]): File to dump to.
             Either a path to the file or an open file handle.
     """
-    with file_context(file, 'wb') as f:
-        dill.dump(
-            obj,
-            file=f,
-            protocol=dill.HIGHEST_PROTOCOL,
-            recurse=True
-        )
+    with file_context(file, "wb") as f:
+        dill.dump(obj, file=f, protocol=dill.HIGHEST_PROTOCOL, recurse=True)
 
 
 def safe_load(file: Union[BinaryIO, str, Path]) -> Any:
@@ -59,5 +50,5 @@ def safe_load(file: Union[BinaryIO, str, Path]) -> Any:
     Returns:
         Any: Object loaded from the file.
     """
-    with file_context(file, 'rb') as f:
+    with file_context(file, "rb") as f:
         return dill.load(f)
