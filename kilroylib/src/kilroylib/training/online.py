@@ -2,9 +2,8 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Generic, Hashable, List, Sequence, Tuple, TypeVar
 
-from kilroyshare import Face
+from kilroyshare import Face, Module
 
-from kilroylib.modules import Module
 from kilroylib.training.state import TrainingState
 from kilroylib.training.stop import (
     MaxUpdatesStopCondition,

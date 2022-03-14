@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from kilroylib.modules import Module
+from kilroyshare import Module
 
 
 @dataclass
