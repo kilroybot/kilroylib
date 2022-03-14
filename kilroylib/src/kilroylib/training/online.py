@@ -1,4 +1,4 @@
-import time
+import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Generic, Hashable, List, Sequence, Tuple, TypeVar
 
@@ -20,9 +20,10 @@ class PostGenerator(Generic[KI, V]):
     def __init__(self, n: int) -> None:
         self.n = n
 
-    def generate(self, module: Module) -> Dict[KI, V]:
+    async def generate(self, module: Module) -> Dict[KI, V]:
         return {
-            internal_id: post for internal_id, post in module.generate(self.n)
+            internal_id: post
+            async for internal_id, post in module.generate(self.n)
         }
 
 
@@ -30,21 +31,21 @@ class PostScheduler(Generic[KE, V]):
     def __init__(self, cooldown: timedelta) -> None:
         self.cooldown = cooldown
 
-    def post(self, posts: Sequence[V], face: Face) -> List[KE]:
+    async def post(self, posts: Sequence[V], face: Face) -> List[KE]:
         post_ids = []
         for post in posts:
-            post_id = face.post(post)
+            post_id = await face.post(post)
             post_ids.append(post_id)
-            self.wait()
+            await self.wait()
         return post_ids
 
-    def wait(self) -> None:
-        time.sleep(self.cooldown.seconds)
+    async def wait(self) -> None:
+        await asyncio.sleep(self.cooldown.seconds)
 
 
 class PostScorer(Generic[KE]):
-    def score(self, post_id: KE, face: Face) -> float:
-        return face.score(post_id)
+    async def score(self, post_id: KE, face: Face) -> float:
+        return await face.score(post_id)
 
 
 class OnlineTrainer(Generic[KI, KE, V]):
@@ -75,26 +76,26 @@ class OnlineTrainer(Generic[KI, KE, V]):
             module=module,
         )
 
-    def train(self, module: Module, face: Face) -> Module:
+    async def train(self, module: Module, face: Face) -> Module:
         state = self.get_starting_state(module)
-        while not self.stop_condition.done(state):  # update loop
-            internal_ids, posts = self.generate(state.module)
-            external_ids = self.scheduler.post(posts, face)
-            scores = self.score(external_ids, face)
-            state.module = state.module.reinforce(
+        while not await self.stop_condition.done(state):  # update loop
+            internal_ids, posts = await self.generate(state.module)
+            external_ids = await self.scheduler.post(posts, face)
+            scores = await self.score(external_ids, face)
+            state.module = await state.module.reinforce(
                 self.map_scores(internal_ids, scores)
             )
             state.updates += 1
         return module
 
-    def generate(self, module) -> Tuple[List[KI], List[V]]:
-        generated = self.generator.generate(module)
+    async def generate(self, module) -> Tuple[List[KI], List[V]]:
+        generated = await self.generator.generate(module)
         keys = list(generated.keys())
         posts = [generated[key] for key in keys]
         return keys, posts
 
-    def score(self, post_ids: Sequence[KE], face) -> List[float]:
-        return [self.scorer.score(post_id, face) for post_id in post_ids]
+    async def score(self, post_ids: Sequence[KE], face) -> List[float]:
+        return [await self.scorer.score(post_id, face) for post_id in post_ids]
 
     @staticmethod
     def map_scores(

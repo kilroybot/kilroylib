@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import (
+    AsyncIterator,
     Collection,
     Dict,
     Generic,
@@ -22,7 +23,7 @@ class Module(ABC, Generic[K, V]):
     """
 
     @abstractmethod
-    def generate(self, n: int = 1) -> Iterator[Tuple[K, V]]:
+    async def generate(self, n: int = 1) -> AsyncIterator[Tuple[K, V]]:
         """Generates new sample.
 
         Args:
@@ -32,10 +33,10 @@ class Module(ABC, Generic[K, V]):
             Iterator[Tuple[K, V]]: Iterator of tuples with internal identifier
                 of generated sample and generated sample itself.
         """
-        pass
+        yield
 
     @abstractmethod
-    def mimic(self, samples: Collection[V]) -> "Module":
+    async def mimic(self, samples: Collection[V]) -> "Module":
         """Learns to mimic existing samples.
 
         Args:
@@ -47,7 +48,7 @@ class Module(ABC, Generic[K, V]):
         pass
 
     @abstractmethod
-    def reinforce(self, scores: Dict[K, float]) -> "Module":
+    async def reinforce(self, scores: Dict[K, float]) -> "Module":
         """Learns from previous samples' scores.
 
         Args:

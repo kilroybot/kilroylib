@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import (
     Any,
+    AsyncIterator,
     Generic,
     Iterable,
-    Iterator,
     List,
     Tuple,
     TypeVar,
@@ -34,9 +34,9 @@ class PostsLoader(Generic[V]):
         self.batch_size = batch_size
         self.dataset_factory = dataset_factory
 
-    def load(self, face: Face) -> Iterator[List[V]]:
-        with self.create_dataset(face) as dataset:
-            for batch in self.iterate_dataset(dataset):
+    async def load(self, face: Face) -> AsyncIterator[List[V]]:
+        async with self.create_dataset(face) as dataset:
+            async for batch in self.iterate_dataset(dataset):
                 yield self.map_samples(batch)
 
     def create_dataset(self, face: Face) -> Dataset[Tuple[Any, V]]:
@@ -44,7 +44,7 @@ class PostsLoader(Generic[V]):
 
     def iterate_dataset(
         self, dataset: Dataset[Tuple[Any, V]]
-    ) -> Iterable[Tuple[Any, V]]:
+    ) -> DataLoader[Tuple[Any, V]]:
         return DataLoader(dataset, batch_size=self.batch_size)
 
     @staticmethod
@@ -76,13 +76,13 @@ class OfflineTrainer(Generic[V]):
             module=module,
         )
 
-    def train(self, module: Module, face: Face) -> Module:
+    async def train(self, module: Module, face: Face) -> Module:
         state = self.get_starting_state(module)
-        while not self.stop_condition.done(state):  # epoch loop
-            for posts in self.posts_loader.load(face):  # batch loop
-                state.module = state.module.mimic(posts)  # update per batch
-                state.updates += 1
-                if self.stop_condition.done(state):
+        while not await self.stop_condition.done(state):  # epoch loop
+            async for posts in self.posts_loader.load(face):  # batch loop
+                state.module = await state.module.mimic(posts)
+                state.updates += 1  # update per batch
+                if await self.stop_condition.done(state):
                     return state.module
             state.epochs += 1
         return state.module
