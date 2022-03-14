@@ -13,9 +13,10 @@ documentation = "https://kilroybot.github.io/kilroylib"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-kilroyshare = "~0.3"
+kilroyshare = "~0.4"
 numpy = "^1.21"
 dill = "^0.3"
+aiofiles = "^0.8"
 
 # dev
 jupyterlab = { version = "^3.2", optional = true }

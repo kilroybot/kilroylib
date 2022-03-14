@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from collections import Iterable
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import (
+    AsyncIterable,
+    AsyncIterator,
     Generic,
     Iterator,
     List,
@@ -14,12 +15,14 @@ from typing import (
     Union,
 )
 
-from kilroylib.utils import safe_dump, safe_load
+from aiofiles.tempfile import TemporaryDirectory
+
+from kilroylib.utils import Contextable, run_sync, safe_dump, safe_load
 
 T = TypeVar("T")
 
 
-class Dataset(ABC, Generic[T]):
+class Dataset(ABC, Generic[T], Contextable):
     """Dataset base class.
 
     Can be used as a context manager.
@@ -51,16 +54,21 @@ class Dataset(ABC, Generic[T]):
         """
         pass
 
-    def __enter__(self) -> "Dataset":
-        return self
+    @abstractmethod
+    async def __agetitem__(
+        self, index: Union[int, slice]
+    ) -> Union[T, Sequence[T]]:
+        """Gets sample at given index asynchronously.
 
-    def __exit__(
-        self,
-        exctype: Optional[Type[BaseException]],
-        excinst: Optional[BaseException],
-        exctb: Optional[TracebackType],
-    ) -> bool:
-        return False  # don't suppress exceptions
+        Args:
+            index (Union[int, slice]): Index of sample in the dataset.
+                Int or slice.
+
+        Returns:
+            Union[T, Sequence[T]]: Data sample.
+                Single if index was int, sequence if index was a slice.
+        """
+        pass
 
 
 class MemoryCachingDataset(Dataset[T]):
@@ -70,19 +78,28 @@ class MemoryCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, data: Iterable[T]) -> None:
+    def __init__(self, iterable: AsyncIterable[T]) -> None:
         """
         Args:
-            data (Iterable[T]): Iterator with data samples.
+            iterable (AsyncIterable[T]): Async iterable with data samples.
         """
         super().__init__()
-        self.data = list(data)
+        self.iterable = iterable
+
+    async def __aenter__(self) -> "MemoryCachingDataset":
+        self.data = [x async for x in self.iterable]
+        return self
 
     def __len__(self) -> int:
         return len(self.data)
 
     def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
         return self.data[index]
+
+    async def __agetitem__(
+        self, index: Union[int, slice]
+    ) -> Union[T, Sequence[T]]:
+        return self.__getitem__(index)
 
 
 class FileCachingDataset(Dataset[T]):
@@ -92,54 +109,55 @@ class FileCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, data: Iterable[T]) -> None:
+    def __init__(self, iterable: AsyncIterable[T]) -> None:
         """
         Args:
-            data (Iterable[T]): Iterator with data samples.
+            iterable (AsyncIterable[T]): Async iterable with data samples.
         """
         super().__init__()
-        self.data = data
-        self.tempdir = TemporaryDirectory()
-        self.n_samples = self._fetch(self.data, self.tempdir.name)
+        self.iterable = iterable
 
-    @staticmethod
-    def _sample_path(base_dir: str, index: int) -> Path:
-        return Path(base_dir) / str(index)
+    def get_path(self, index: int) -> Path:
+        return self.tempdir / str(index)
 
-    @staticmethod
-    def _fetch(data: Iterable[T], directory: str) -> int:
+    async def fetch(self) -> int:
         samples = 0
-        for sample in data:
-            safe_dump(
-                sample, FileCachingDataset._sample_path(directory, samples)
-            )
+        async for sample in self.iterable:
+            await safe_dump(sample, self.get_path(samples))
             samples += 1
         return samples
 
-    def free(self) -> None:
-        """Frees the cache. Only for manual use outside context manager."""
-        self.tempdir.cleanup()
+    async def __aenter__(self) -> "FileCachingDataset":
+        self.tempdir_context_manager = TemporaryDirectory()
+        self.tempdir = Path(await self.tempdir_context_manager.__aenter__())
+        self.n_samples = await self.fetch()
+        return self
 
-    def __exit__(
+    async def __aexit__(
         self,
         exctype: Optional[Type[BaseException]],
         excinst: Optional[BaseException],
         exctb: Optional[TracebackType],
     ) -> bool:
-        self.free()
+        await self.tempdir_context_manager.__aexit__(exctype, excinst, exctb)
         return False  # don't suppress exceptions
 
     def __len__(self) -> int:
         return self.n_samples
 
-    def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
+    async def __agetitem__(
+        self, index: Union[int, slice]
+    ) -> Union[T, Sequence[T]]:
         if isinstance(index, slice):
-            return tuple(
-                safe_load(self._sample_path(self.tempdir.name, i))
+            return [
+                await safe_load(self.get_path(i))
                 for i in range(*index.indices(self.__len__()))
-            )
+            ]
 
-        return safe_load(self._sample_path(self.tempdir.name, index))
+        return await safe_load(self.get_path(index))
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
+        return run_sync(self.__agetitem__(index))
 
 
 class DatasetFactory(ABC, Generic[T]):
@@ -150,7 +168,7 @@ class DatasetFactory(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def create(self, data: Iterable[T]) -> Dataset[T]:
+    def create(self, data: AsyncIterable[T]) -> Dataset[T]:
         """Creates Dataset from iterator.
 
         Args:
@@ -169,7 +187,7 @@ class MemoryCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, data: Iterable[T]) -> Dataset[T]:
+    def create(self, data: AsyncIterable[T]) -> Dataset[T]:
         return MemoryCachingDataset(data)
 
 
@@ -180,7 +198,7 @@ class FileCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, data: Iterable[T]) -> Dataset[T]:
+    def create(self, data: AsyncIterable[T]) -> Dataset[T]:
         return FileCachingDataset(data)
 
 
@@ -202,6 +220,11 @@ class BatchedDataFetcher(Iterable[List[T]]):
         self.batch_size = batch_size
         self.len = len(dataset)
 
+    def slices(self) -> Iterator[slice]:
+        for i in range(0, self.len, self.batch_size):
+            start, stop = i, min(i + self.batch_size, self.len)
+            yield slice(start, stop)
+
     def __iter__(self) -> Iterator[List[T]]:
         """Gets iterator with batches of samples.
 
@@ -209,9 +232,18 @@ class BatchedDataFetcher(Iterable[List[T]]):
             Iterator[List[T]]: Iterator with batches of samples.
                 Each batch is a list of samples.
         """
-        for i in range(0, self.len, self.batch_size):
-            start, stop = i, min(i + self.batch_size, self.len)
-            yield self.dataset[start:stop]
+        for index in self.slices():
+            yield self.dataset.__getitem__(index)
+
+    async def __aiter__(self) -> AsyncIterator[List[T]]:
+        """Gets iterator with batches of samples asynchronously.
+
+        Returns:
+            AsyncIterator[List[T]]: Async iterator with batches of samples.
+                Each batch is a list of samples.
+        """
+        for index in self.slices():
+            yield await self.dataset.__agetitem__(index)
 
 
 class DataLoader(Iterable[List[T]]):
@@ -243,3 +275,12 @@ class DataLoader(Iterable[List[T]]):
                 Each batch is a list of samples.
         """
         return iter(self.fetcher)
+
+    def __aiter__(self) -> AsyncIterator[List[T]]:
+        """Gets iterator with batches of samples asynchronously.
+
+        Returns:
+            AsyncIterator[List[T]]: Async iterator with batches of samples.
+                Each batch is a list of samples.
+        """
+        return self.fetcher.__aiter__()
