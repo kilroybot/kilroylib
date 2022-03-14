@@ -67,17 +67,22 @@ class OfflineTrainer(Generic[V]):
         self.stop_condition = stop_condition
         self.posts_loader = posts_loader
 
-    def train(self, module: Module, face: Face) -> Module:
-        state = TrainingState(
+    @staticmethod
+    def get_starting_state(module: Module) -> TrainingState:
+        return TrainingState(
             start_time=datetime.utcnow(),
             epochs=0,
             updates=0,
             module=module,
         )
-        while not self.stop_condition.done(state):
-            for posts in self.posts_loader.load(face):
-                module = module.mimic(posts)  # update per batch
+
+    def train(self, module: Module, face: Face) -> Module:
+        state = self.get_starting_state(module)
+        while not self.stop_condition.done(state):  # epoch loop
+            for posts in self.posts_loader.load(face):  # batch loop
+                state.module = state.module.mimic(posts)  # update per batch
                 state.updates += 1
+                if self.stop_condition.done(state):
+                    return state.module
             state.epochs += 1
-            state.module = module
-        return module
+        return state.module

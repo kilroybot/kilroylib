@@ -65,20 +65,25 @@ class OnlineTrainer(Generic[KI, KE, V]):
         self.scheduler = scheduler
         self.scorer = scorer
 
-    def train(self, module: Module, face: Face) -> Module:
-        state = TrainingState(
+    @staticmethod
+    def get_starting_state(module: Module) -> TrainingState:
+        return TrainingState(
             start_time=datetime.utcnow(),
             epochs=0,
             updates=0,
             module=module,
         )
-        while not self.stop_condition.done(state):
-            internal_ids, posts = self.generate(module)
+
+    def train(self, module: Module, face: Face) -> Module:
+        state = self.get_starting_state(module)
+        while not self.stop_condition.done(state):  # update loop
+            internal_ids, posts = self.generate(state.module)
             external_ids = self.scheduler.post(posts, face)
             scores = self.score(external_ids, face)
-            module = module.reinforce(self.map_scores(internal_ids, scores))
+            state.module = state.module.reinforce(
+                self.map_scores(internal_ids, scores)
+            )
             state.updates += 1
-            state.module = module
         return module
 
     def generate(self, module) -> Tuple[List[KI], List[V]]:
