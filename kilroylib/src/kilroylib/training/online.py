@@ -21,8 +21,9 @@ class PostGenerator(Generic[KI, V]):
         self.n = n
 
     def generate(self, module: Module) -> Dict[KI, V]:
-        posts = (module.generate() for _ in range(self.n))
-        return {internal_id: post for internal_id, post in posts}
+        return {
+            internal_id: post for internal_id, post in module.generate(self.n)
+        }
 
 
 class PostScheduler(Generic[KE, V]):

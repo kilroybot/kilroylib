@@ -1,5 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Collection, Dict, Generic, Hashable, Tuple, TypeVar
+from typing import (
+    Collection,
+    Dict,
+    Generic,
+    Hashable,
+    Iterator,
+    Tuple,
+    TypeVar,
+)
 
 K = TypeVar("K", bound=Hashable)
 V = TypeVar("V")
@@ -14,14 +22,17 @@ class Module(ABC, Generic[K, V]):
     """
 
     @abstractmethod
-    def generate(self) -> Tuple[K, V]:
+    def generate(self, n: int = 1) -> Iterator[Tuple[K, V]]:
         """Generates new sample.
 
+        Args:
+            n (int, default: 1): How many samples to generate.
+
         Returns:
-            Tuple[K, V]: Internal identifier of generated sample and generated
-                sample itself.
+            Iterator[Tuple[K, V]]: Iterator of tuples with internal identifier
+                of generated sample and generated sample itself.
         """
-        return NotImplemented
+        pass
 
     @abstractmethod
     def mimic(self, samples: Collection[V]) -> "Module":
