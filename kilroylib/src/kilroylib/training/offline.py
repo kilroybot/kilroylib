@@ -9,7 +9,7 @@ from typing import (
     TypeVar,
 )
 
-from kilroyshare import Face
+from kilroyshare import Face, Module
 
 from kilroylib.data import (
     DataLoader,
@@ -17,7 +17,6 @@ from kilroylib.data import (
     DatasetFactory,
     MemoryCachingDatasetFactory,
 )
-from kilroylib.modules import Module
 from kilroylib.training.state import TrainingState
 from kilroylib.training.stop import (
     MaxEpochsStopCondition,

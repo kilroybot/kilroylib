@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kilroylib"
-version = "0.1.0"
+version = "0.3.0"
 description = "kilroy core library ⚙️"
 readme = "README.md"
 authors = ["kilroy <kilroymail@pm.me>"]
@@ -13,7 +13,7 @@ documentation = "https://kilroybot.github.io/kilroylib"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-kilroyshare = "~0.4"
+kilroyshare = "~0.5.1"
 numpy = "^1.21"
 dill = "^0.3"
 aiofiles = "^0.8"
