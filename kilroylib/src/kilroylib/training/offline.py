@@ -18,10 +18,10 @@ from kilroylib.data import (
     MemoryCachingDatasetFactory,
 )
 from kilroylib.modules import Module
+from kilroylib.training.state import TrainingState
 from kilroylib.training.stop import (
     MaxEpochsStopCondition,
     StopCondition,
-    TrainingState,
 )
 
 V = TypeVar("V")

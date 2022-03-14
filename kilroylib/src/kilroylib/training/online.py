@@ -5,10 +5,10 @@ from typing import Dict, Generic, Hashable, List, Sequence, Tuple, TypeVar
 from kilroyshare import Face
 
 from kilroylib.modules import Module
+from kilroylib.training.state import TrainingState
 from kilroylib.training.stop import (
     MaxUpdatesStopCondition,
     StopCondition,
-    TrainingState,
 )
 
 KI = TypeVar("KI", bound=Hashable)

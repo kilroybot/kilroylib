@@ -1,16 +1,7 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from kilroylib.modules import Module
-
-
-@dataclass
-class TrainingState:
-    start_time: datetime
-    epochs: int
-    updates: int
-    module: Module
+from kilroylib.training.state import TrainingState
 
 
 class StopCondition(ABC):
