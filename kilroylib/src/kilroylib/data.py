@@ -3,7 +3,6 @@ from collections import Iterable
 from pathlib import Path
 from types import TracebackType
 from typing import (
-    AsyncIterable,
     AsyncIterator,
     Generic,
     Iterator,
@@ -17,7 +16,13 @@ from typing import (
 
 from aiofiles.tempfile import TemporaryDirectory
 
-from kilroylib.utils import Contextable, run_sync, safe_dump, safe_load
+from kilroylib.utils import (
+    Contextable,
+    background,
+    run_sync,
+    safe_dump,
+    safe_load,
+)
 
 T = TypeVar("T")
 
@@ -78,16 +83,19 @@ class MemoryCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, iterable: AsyncIterable[T]) -> None:
+    def __init__(self, iterable: Iterable[T]) -> None:
         """
         Args:
-            iterable (AsyncIterable[T]): Async iterable with data samples.
+            iterable (Iterable[T]): Iterable with data samples.
         """
         super().__init__()
         self.iterable = iterable
 
     async def __aenter__(self) -> "MemoryCachingDataset":
-        self.data = [x async for x in self.iterable]
+        def fetch(iterable: Iterable[T]) -> T:
+            return [x for x in iterable]
+
+        self.data = await background(fetch, self.iterable)
         return self
 
     def __len__(self) -> int:
@@ -109,10 +117,10 @@ class FileCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, iterable: AsyncIterable[T]) -> None:
+    def __init__(self, iterable: Iterable[T]) -> None:
         """
         Args:
-            iterable (AsyncIterable[T]): Async iterable with data samples.
+            iterable (Iterable[T]): Iterable with data samples.
         """
         super().__init__()
         self.iterable = iterable
@@ -120,17 +128,17 @@ class FileCachingDataset(Dataset[T]):
     def get_path(self, index: int) -> Path:
         return self.tempdir / str(index)
 
-    async def fetch(self) -> int:
+    def fetch(self) -> int:
         samples = 0
-        async for sample in self.iterable:
-            await safe_dump(sample, self.get_path(samples))
+        for sample in self.iterable:
+            run_sync(safe_dump(sample, self.get_path(samples)))
             samples += 1
         return samples
 
     async def __aenter__(self) -> "FileCachingDataset":
         self.tempdir_context_manager = TemporaryDirectory()
         self.tempdir = Path(await self.tempdir_context_manager.__aenter__())
-        self.n_samples = await self.fetch()
+        self.n_samples = await background(self.fetch)
         return self
 
     async def __aexit__(
@@ -168,11 +176,11 @@ class DatasetFactory(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def create(self, data: AsyncIterable[T]) -> Dataset[T]:
+    def create(self, data: Iterable[T]) -> Dataset[T]:
         """Creates Dataset from iterator.
 
         Args:
-            data (Iterable[T]): iterable with data samples.
+            data (Iterable[T]): Iterable with data samples.
 
         Returns:
             Dataset[T]: Instance of Dataset created from given iterator.
@@ -187,7 +195,7 @@ class MemoryCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, data: AsyncIterable[T]) -> Dataset[T]:
+    def create(self, data: Iterable[T]) -> Dataset[T]:
         return MemoryCachingDataset(data)
 
 
@@ -198,7 +206,7 @@ class FileCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, data: AsyncIterable[T]) -> Dataset[T]:
+    def create(self, data: Iterable[T]) -> Dataset[T]:
         return FileCachingDataset(data)
 
 
