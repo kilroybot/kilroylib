@@ -1,15 +1,21 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
+from asyncio import AbstractEventLoop, get_running_loop
+from concurrent.futures import Executor, ThreadPoolExecutor
 from contextlib import nullcontext
+from functools import partial
 from pathlib import Path
 from types import TracebackType
 from typing import (
     Any,
     AsyncContextManager,
+    AsyncIterable,
+    AsyncIterator,
     Awaitable,
+    Callable,
     ContextManager,
     IO,
     Optional,
+    Tuple,
     Type,
     TypeVar,
     Union,
@@ -41,7 +47,7 @@ class Contextable:
         exctype: Optional[Type[BaseException]],
         excinst: Optional[BaseException],
         exctb: Optional[TracebackType],
-    ) -> bool:
+    ) -> Optional[bool]:
         return False  # don't suppress exceptions
 
     def __enter__(self: C) -> C:
@@ -52,7 +58,7 @@ class Contextable:
         exctype: Optional[Type[BaseException]],
         excinst: Optional[BaseException],
         exctb: Optional[TracebackType],
-    ) -> bool:
+    ) -> Optional[bool]:
         return run_sync(self.__aexit__(exctype, excinst, exctb))
 
 
@@ -110,10 +116,34 @@ async def safe_load(file: Union[AsyncFileIO, str, Path]) -> Any:
         return dill.loads(await f.read())
 
 
-def run_sync(awaitable: Awaitable[T]) -> T:
+async def aenumerate(
+    iterable: AsyncIterable[T],
+) -> AsyncIterator[Tuple[int, T]]:
+    i = 0
+    async for x in iterable:
+        yield i, x
+        i += 1
+
+
+def run_sync(
+    awaitable: Awaitable[T], executor: Optional[Executor] = None
+) -> T:
     def run():
         return asyncio.new_event_loop().run_until_complete(awaitable)
 
+    if executor is not None:
+        return executor.submit(run).result()
+
     with ThreadPoolExecutor() as executor:
-        future = executor.submit(run)
-        return future.result()
+        return executor.submit(run).result()
+
+
+async def background(
+    f: Callable[..., T],
+    *args,
+    loop: AbstractEventLoop = get_running_loop(),
+    executor: Optional[Executor] = None,
+    **kwargs,
+) -> T:
+    f = partial(f, *args, **kwargs)
+    return await loop.run_in_executor(executor, f)
