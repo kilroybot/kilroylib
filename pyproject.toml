@@ -3,7 +3,7 @@
 
 [tool.poetry]
 name = "kilroylib"
-version = "0.3.0"
+version = "0.3.1"
 description = "kilroy core library ⚙️"
 readme = "kilroylib/README.md"
 authors = ["kilroy <kilroymail@pm.me>"]
