@@ -2,14 +2,14 @@
 
 <div align="center">
 
-[![Running tests](https://github.com/kilroybot/kilroylib/actions/workflows/test.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/test.yml)
-[![Deploying docs](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml)
+kilroy core library ⚙️
+
+[![Tests](https://github.com/kilroybot/kilroylib/actions/workflows/test-multiplatform.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/test-multiplatform.yml)
+[![Docs](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml)
 
 </div>
 
 ---
-
-kilroy core library ⚙️
 
 TODO
 

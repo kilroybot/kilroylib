@@ -1,13 +1,17 @@
+# this file is needed to install the package from git without support for subdirectories
+# see: https://github.com/python-poetry/poetry/issues/755
+
 [tool.poetry]
 name = "kilroylib"
 version = "0.3.0"
 description = "kilroy core library ⚙️"
-readme = "README.md"
+readme = "kilroylib/README.md"
 authors = ["kilroy <kilroymail@pm.me>"]
 classifiers = ["License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"]
 repository = "https://github.com/kilroybot/kilroylib"
 documentation = "https://kilroybot.github.io/kilroylib"
+packages = [{ include = "kilroylib", from = "kilroylib/src" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"
