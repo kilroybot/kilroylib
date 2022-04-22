@@ -73,5 +73,4 @@ extra:
 
 nav:
   - Home: index.md
-  - Usage:
-      - Library: usage/library.md
+  - Usage: usage.md

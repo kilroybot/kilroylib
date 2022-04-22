@@ -2,8 +2,10 @@
 
 <div align="center">
 
-[![Running tests](https://github.com/kilroybot/kilroylib/actions/workflows/test.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/test.yml)
-[![Deploying docs](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml)
+kilroy core library ⚙️
+
+[![Tests](https://github.com/kilroybot/kilroylib/actions/workflows/test-multiplatform.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/test-multiplatform.yml)
+[![Docs](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml/badge.svg)](https://github.com/kilroybot/kilroylib/actions/workflows/docs.yml)
 
 </div>
 
@@ -43,8 +45,8 @@ $ python3 -m pip install ./kilroylib
 We are using [`conda`](https://conda.io) for environment management (but you
 can as well use any other tool, e.g. `pyenv + venv`). The major reason is
 that `conda` lets you specify `python` version and will install that version in
-the environment. This ensures consistency between different instances (
-developers, CI, deployment).
+the environment. This ensures consistency between different instances
+(developers, CI, deployment).
 
 The first step is of course to install [`conda`](https://conda.io).
 
@@ -150,8 +152,8 @@ changes in the `poetry.lock` file.
 When you push changes to remote, different GitHub Actions run to ensure project
 consistency. There are defined workflows for:
 
-- testing on different platforms
 - deploying docs to GitHub Pages
+- testing on different platforms
 - drafting release notes
 - uploading releases to PyPI
 
@@ -168,9 +170,10 @@ Every time you merge a pull request into main, a draft release is automatically
 updated, adding the pull request to changelog. Changes can be categorized by
 using labels. You can configure that in `.github/release-drafter.yml` file.
 
-Every time you publish a release, the package is uploaded to PyPI with version
-taken from release tag (ignoring the version in source code). You should store
-your PyPI token in `PYPI_TOKEN` secret.
+Every time you publish a release:
+
+- the package is uploaded to PyPI with version taken from release tag (you
+  should store your PyPI token in `PYPI_TOKEN` secret)
 
 ## Jupyter
 
