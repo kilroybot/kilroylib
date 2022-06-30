@@ -9,7 +9,7 @@ from kilroylib.training.online.stop import (
     MaxEpisodes,
     StopCondition,
 )
-from kilroylib.utils import background
+from kilroylib.utils import abackground, background
 
 KI = TypeVar("KI", bound=Hashable)
 KE = TypeVar("KE", bound=Hashable)
@@ -34,7 +34,7 @@ class PostScheduler(Generic[KE, V]):
     async def post(self, posts: Sequence[V], face: Face) -> List[KE]:
         post_ids = []
         for post in posts:
-            post_id = await background(face.post, post)
+            post_id = await abackground(face.post(post))
             post_ids.append(post_id)
             await self.wait()
         return post_ids
@@ -88,7 +88,7 @@ class Trainer(Generic[KI, KE, V]):
 
     @staticmethod
     async def score(post_ids: Sequence[KE], face) -> List[float]:
-        return [await background(face.score, post_id) for post_id in post_ids]
+        return [await abackground(face.score(post_id)) for post_id in post_ids]
 
     @staticmethod
     def map_scores(

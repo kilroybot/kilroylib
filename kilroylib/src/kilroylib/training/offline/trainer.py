@@ -35,7 +35,8 @@ class PostsLoader(Generic[V]):
         self.dataset_factory = dataset_factory
 
     async def load(self, face: Face) -> Dataset[Tuple[Any, V]]:
-        return self.dataset_factory.create(await background(face.scrap))
+        it = await background(face.scrap)
+        return self.dataset_factory.create(it)
 
     async def iterate(
         self, dataset: Dataset[Tuple[Any, V]]
@@ -102,7 +103,7 @@ class Trainer(Generic[V]):
 
     async def train(self, module: OfflineModule, face: Face) -> OfflineModule:
         state = self.get_starting_state(module)
-        async with await self.load(face) as dataset:
+        async with (await self.load(face)) as dataset:
             # epoch loop
             while not self.should_stop(state):
                 # batch loop
