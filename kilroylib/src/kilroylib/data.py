@@ -3,7 +3,9 @@ from collections import Iterable
 from pathlib import Path
 from types import TracebackType
 from typing import (
+    AsyncIterable,
     AsyncIterator,
+    Awaitable,
     Generic,
     Iterator,
     List,
@@ -18,7 +20,8 @@ from aiofiles.tempfile import TemporaryDirectory
 
 from kilroylib.utils import (
     Contextable,
-    background,
+    abackground,
+    asyncify,
     run_sync,
     safe_dump,
     safe_load,
@@ -83,19 +86,24 @@ class MemoryCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, iterable: Iterable[T]) -> None:
+    def __init__(
+        self,
+        iterable: Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]],
+    ) -> None:
         """
         Args:
-            iterable (Iterable[T]): Iterable with data samples.
+            iterable (Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]]):
+                Iterable or AsyncIterable or Awaitable with Iterable with data
+                samples.
         """
         super().__init__()
-        self.iterable = iterable
+        self.iterable = asyncify(iterable)
 
     async def __aenter__(self) -> "MemoryCachingDataset":
-        def fetch(iterable: Iterable[T]) -> T:
-            return [x for x in iterable]
+        async def fetch(iterable: AsyncIterable[T]) -> List[T]:
+            return [x async for x in iterable]
 
-        self.data = await background(fetch, self.iterable)
+        self.data = await abackground(fetch(self.iterable))
         return self
 
     def __len__(self) -> int:
@@ -117,20 +125,25 @@ class FileCachingDataset(Dataset[T]):
         T (Any): Type of data sample.
     """
 
-    def __init__(self, iterable: Iterable[T]) -> None:
+    def __init__(
+        self,
+        iterable: Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]],
+    ) -> None:
         """
         Args:
-            iterable (Iterable[T]): Iterable with data samples.
+            iterable (Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]]):
+                Iterable or AsyncIterable or Awaitable with Iterable with data
+                samples.
         """
         super().__init__()
-        self.iterable = iterable
+        self.iterable = asyncify(iterable)
 
     def get_path(self, index: int) -> Path:
         return self.tempdir / str(index)
 
-    def fetch(self) -> int:
+    async def fetch(self) -> int:
         samples = 0
-        for sample in self.iterable:
+        async for sample in self.iterable:
             run_sync(safe_dump(sample, self.get_path(samples)))
             samples += 1
         return samples
@@ -138,7 +151,7 @@ class FileCachingDataset(Dataset[T]):
     async def __aenter__(self) -> "FileCachingDataset":
         self.tempdir_context_manager = TemporaryDirectory()
         self.tempdir = Path(await self.tempdir_context_manager.__aenter__())
-        self.n_samples = await background(self.fetch)
+        self.n_samples = await abackground(self.fetch())
         return self
 
     async def __aexit__(
@@ -176,11 +189,16 @@ class DatasetFactory(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def create(self, data: Iterable[T]) -> Dataset[T]:
+    def create(
+        self,
+        data: Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]],
+    ) -> Dataset[T]:
         """Creates Dataset from iterator.
 
         Args:
-            data (Iterable[T]): Iterable with data samples.
+            data (Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]]):
+                Iterable or AsyncIterable or Awaitable with Iterable with data
+                samples.
 
         Returns:
             Dataset[T]: Instance of Dataset created from given iterator.
@@ -195,7 +213,10 @@ class MemoryCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, data: Iterable[T]) -> Dataset[T]:
+    def create(
+        self,
+        data: Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]],
+    ) -> Dataset[T]:
         return MemoryCachingDataset(data)
 
 
@@ -206,7 +227,10 @@ class FileCachingDatasetFactory(DatasetFactory[T]):
         T (Any): Type of data sample.
     """
 
-    def create(self, data: Iterable[T]) -> Dataset[T]:
+    def create(
+        self,
+        data: Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]],
+    ) -> Dataset[T]:
         return FileCachingDataset(data)
 
 

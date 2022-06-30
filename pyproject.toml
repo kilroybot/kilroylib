@@ -15,7 +15,7 @@ packages = [{ include = "kilroylib", from = "kilroylib/src" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-kilroyshare = "~0.6.0"
+kilroyshare = "~0.7.0"
 numpy = "^1.21"
 dill = "^0.3"
 aiofiles = "^0.8"

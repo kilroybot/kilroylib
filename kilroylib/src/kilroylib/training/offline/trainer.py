@@ -34,8 +34,8 @@ class PostsLoader(Generic[V]):
         self.batch_size = batch_size
         self.dataset_factory = dataset_factory
 
-    async def load(self, face: Face) -> Dataset[Tuple[Any, V]]:
-        return self.dataset_factory.create(await background(face.scrap))
+    def load(self, face: Face) -> Dataset[Tuple[Any, V]]:
+        return self.dataset_factory.create(face.scrap())
 
     async def iterate(
         self, dataset: Dataset[Tuple[Any, V]]
@@ -78,8 +78,8 @@ class Trainer(Generic[V]):
             module=module,
         )
 
-    async def load(self, face: Face) -> Dataset[Tuple[Any, V]]:
-        return await self.posts_loader.load(face)
+    def load(self, face: Face) -> Dataset[Tuple[Any, V]]:
+        return self.posts_loader.load(face)
 
     def should_stop(self, state: TrainingState) -> bool:
         return self.stop_condition.done(state)
@@ -102,7 +102,7 @@ class Trainer(Generic[V]):
 
     async def train(self, module: OfflineModule, face: Face) -> OfflineModule:
         state = self.get_starting_state(module)
-        async with await self.load(face) as dataset:
+        async with self.load(face) as dataset:
             # epoch loop
             while not self.should_stop(state):
                 # batch loop

@@ -14,6 +14,7 @@ from typing import (
     Callable,
     ContextManager,
     IO,
+    Iterable,
     Optional,
     Tuple,
     Type,
@@ -25,6 +26,7 @@ import aiofiles
 import dill
 from aiofiles.base import AiofilesContextManager
 from aiofiles.threadpool.binary import AsyncBufferedIOBase, AsyncFileIO
+from anyio._core._fileio import OpenBinaryMode
 
 T = TypeVar("T")
 C = TypeVar("C", bound="Contextable")
@@ -64,7 +66,7 @@ class Contextable:
 
 def file_context(
     file: Union[AsyncFileIO, str, Path],
-    mode: Optional[str] = None,
+    mode: OpenBinaryMode = "r",
 ) -> Union[
     AsyncContextManager[AsyncFileIO],
     AiofilesContextManager[None, None, AsyncBufferedIOBase],
@@ -147,3 +149,28 @@ async def background(
 ) -> T:
     f = partial(f, *args, **kwargs)
     return await loop.run_in_executor(executor, f)
+
+
+async def abackground(
+    a: Awaitable[T],
+    loop: AbstractEventLoop = get_running_loop(),
+    executor: Optional[Executor] = None,
+) -> T:
+    return await loop.run_in_executor(executor, run_sync, a, executor)
+
+
+def asyncify(
+    it: Union[Iterable[T], AsyncIterable[T], Awaitable[Iterable[T]]]
+) -> AsyncIterable[T]:
+    if isinstance(it, AsyncIterable):
+        return it
+
+    async def wrap_sync(
+        it: Union[Iterable[T], Awaitable[Iterable[T]]]
+    ) -> AsyncIterable[T]:
+        if isinstance(it, Awaitable):
+            it = await it
+        for item in it:
+            yield item
+
+    return wrap_sync(it)
