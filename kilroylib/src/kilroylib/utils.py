@@ -142,19 +142,21 @@ def run_sync(
 async def background(
     f: Callable[..., T],
     *args,
-    loop: AbstractEventLoop = get_running_loop(),
+    loop: Optional[AbstractEventLoop] = None,
     executor: Optional[Executor] = None,
     **kwargs,
 ) -> T:
+    loop = loop or get_running_loop()
     f = partial(f, *args, **kwargs)
     return await loop.run_in_executor(executor, f)
 
 
 async def abackground(
     a: Awaitable[T],
-    loop: AbstractEventLoop = get_running_loop(),
+    loop: Optional[AbstractEventLoop] = None,
     executor: Optional[Executor] = None,
 ) -> T:
+    loop = loop or get_running_loop()
     return await loop.run_in_executor(executor, run_sync, a, executor)
 
 
