@@ -26,7 +26,6 @@ import aiofiles
 import dill
 from aiofiles.base import AiofilesContextManager
 from aiofiles.threadpool.binary import AsyncBufferedIOBase, AsyncFileIO
-from anyio._core._fileio import OpenBinaryMode
 
 T = TypeVar("T")
 C = TypeVar("C", bound="Contextable")
@@ -66,7 +65,7 @@ class Contextable:
 
 def file_context(
     file: Union[AsyncFileIO, str, Path],
-    mode: OpenBinaryMode = "r",
+    mode: str = "r",
 ) -> Union[
     AsyncContextManager[AsyncFileIO],
     AiofilesContextManager[None, None, AsyncBufferedIOBase],
