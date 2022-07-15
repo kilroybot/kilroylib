@@ -1,15 +1,14 @@
-from asyncio import sleep
+from asyncio import Lock, sleep
 from datetime import datetime, timedelta
 from typing import Dict, Generic, Hashable, List, Sequence, Tuple, TypeVar
-
-from kilroyshare import Face, OnlineModule
 
 from kilroylib.training.online.state import TrainingState
 from kilroylib.training.online.stop import (
     MaxEpisodes,
     StopCondition,
 )
-from kilroylib.utils import abackground, background
+from kilroylib.utils import background
+from kilroyshare import Face, OnlineModule
 
 KI = TypeVar("KI", bound=Hashable)
 KE = TypeVar("KE", bound=Hashable)
@@ -34,12 +33,12 @@ class PostScheduler(Generic[KE, V]):
     async def post(self, posts: Sequence[V], face: Face) -> List[KE]:
         post_ids = []
         for post in posts:
-            post_id = await abackground(face.post(post))
+            post_id = await face.post(post)
             post_ids.append(post_id)
-            await self.wait()
+            await self._wait()
         return post_ids
 
-    async def wait(self) -> None:
+    async def _wait(self) -> None:
         await sleep(self.cooldown.seconds)
 
 
@@ -64,9 +63,11 @@ class Trainer(Generic[KI, KE, V]):
         self.scheduler = scheduler
         self.episode_iterations = episode_iterations
         self.episodes_per_update = episodes_per_update
+        self._lock = None
+        self._stop_requested = False
 
     @staticmethod
-    def get_starting_state(module: OnlineModule) -> TrainingState:
+    def _get_starting_state(module: OnlineModule) -> TrainingState:
         return TrainingState(
             start_time=datetime.utcnow(),
             updates=0,
@@ -74,55 +75,70 @@ class Trainer(Generic[KI, KE, V]):
             module=module,
         )
 
-    def should_stop(self, state: TrainingState) -> bool:
-        return self.stop_condition.done(state)
+    async def _should_stop(self, state: TrainingState) -> bool:
+        async with self._lock:
+            return self._stop_requested or self.stop_condition.done(state)
 
-    async def generate(self, module: OnlineModule) -> Tuple[List[KI], List[V]]:
+    async def _generate(
+        self, module: OnlineModule
+    ) -> Tuple[List[KI], List[V]]:
         generated = await self.generator.generate(module)
         keys = list(generated.keys())
         posts = [generated[key] for key in keys]
         return keys, posts
 
-    async def post(self, posts: List[V], face: Face) -> List[KE]:
+    async def _post(self, posts: List[V], face: Face) -> List[KE]:
         return await self.scheduler.post(posts, face)
 
     @staticmethod
-    async def score(post_ids: Sequence[KE], face) -> List[float]:
-        return [await abackground(face.score(post_id)) for post_id in post_ids]
+    async def _score(post_ids: Sequence[KE], face) -> List[float]:
+        return [await face.score(post_id) for post_id in post_ids]
 
     @staticmethod
-    def map_scores(
+    def _map_scores(
         internal_post_ids: Sequence[KE], scores: Sequence[float]
     ) -> Dict[KE, float]:
         return {
             post_id: score for post_id, score in zip(internal_post_ids, scores)
         }
 
-    async def fit(
+    async def _fit(
         self, module: OnlineModule, ids: Sequence[KI], scores: Sequence[float]
     ) -> None:
-        scores = self.map_scores(ids, scores)
+        scores = self._map_scores(ids, scores)
         for _ in range(self.episode_iterations):
             metrics = await background(module.fit, scores)
 
-    def should_update(self, episode: int) -> bool:
+    def _should_update(self, episode: int) -> bool:
         return (episode + 1) % self.episodes_per_update == 0
 
     @staticmethod
-    async def step(module: OnlineModule) -> OnlineModule:
+    async def _step(module: OnlineModule) -> OnlineModule:
         return await background(module.step)
 
-    async def train(self, module: OnlineModule, face: Face) -> OnlineModule:
-        state = self.get_starting_state(module)
-        while not self.should_stop(state):
-            internal_ids, posts = await self.generate(state.module)
-            external_ids = await self.post(posts, face)
-            scores = await self.score(external_ids, face)
-            await self.fit(state.module, internal_ids, scores)
-            if self.should_update(state.episodes):
-                state.module = await self.step(state.module)
+    async def init(self) -> None:
+        self._lock = Lock()
+
+    async def _on_ended(self) -> None:
+        async with self._lock:
+            self._stop_requested = False
+
+    async def start(self, module: OnlineModule, face: Face) -> OnlineModule:
+        state = self._get_starting_state(module)
+        while not await self._should_stop(state):
+            internal_ids, posts = await self._generate(state.module)
+            external_ids = await self._post(posts, face)
+            scores = await self._score(external_ids, face)
+            await self._fit(state.module, internal_ids, scores)
+            if self._should_update(state.episodes):
+                state.module = await self._step(state.module)
                 state.updates += 1
-                if self.should_stop(state):
-                    return state.module
+                if await self._should_stop(state):
+                    break
             state.episodes += 1
-        return module
+        await self._on_ended()
+        return state.module
+
+    async def stop(self) -> None:
+        async with self._lock:
+            self._stop_requested = True

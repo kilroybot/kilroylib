@@ -1,3 +1,4 @@
+from asyncio import Lock
 from datetime import datetime
 from typing import (
     Any,
@@ -42,10 +43,10 @@ class PostsLoader(Generic[V]):
         self, dataset: Dataset[Tuple[Any, V]]
     ) -> AsyncIterator[List[V]]:
         async for batch in DataLoader(dataset, batch_size=self.batch_size):
-            yield self.map_samples(batch)
+            yield self._map_samples(batch)
 
     @staticmethod
-    def map_samples(samples: Iterable[Tuple[Any, V]]) -> List[V]:
+    def _map_samples(samples: Iterable[Tuple[Any, V]]) -> List[V]:
         return [sample[1] for sample in samples]
 
 
@@ -69,9 +70,11 @@ class Trainer(Generic[V]):
         self.posts_loader = posts_loader
         self.batch_iterations = batch_iterations
         self.batches_per_update = batches_per_update
+        self._lock = None
+        self._stop_requested = False
 
     @staticmethod
-    def get_starting_state(module: OfflineModule) -> TrainingState:
+    def _get_starting_state(module: OfflineModule) -> TrainingState:
         return TrainingState(
             start_time=datetime.utcnow(),
             epochs=0,
@@ -79,40 +82,53 @@ class Trainer(Generic[V]):
             module=module,
         )
 
-    async def load(self, face: Face) -> Dataset[Tuple[Any, V]]:
+    async def _load(self, face: Face) -> Dataset[Tuple[Any, V]]:
         return await self.posts_loader.load(face)
 
-    def should_stop(self, state: TrainingState) -> bool:
-        return self.stop_condition.done(state)
+    async def _should_stop(self, state: TrainingState) -> bool:
+        async with self._lock:
+            return self._stop_requested or self.stop_condition.done(state)
 
-    def iterate(
+    def _iterate(
         self, dataset: Dataset[Tuple[Any, V]]
     ) -> AsyncIterator[List[V]]:
         return self.posts_loader.iterate(dataset)
 
-    async def fit(self, module: OfflineModule, batch: List[V]) -> None:
+    async def _fit(self, module: OfflineModule, batch: List[V]) -> None:
         for _ in range(self.batch_iterations):
             metrics = await background(module.fit, batch)
 
-    def should_update(self, batch_index: int) -> bool:
+    def _should_update(self, batch_index: int) -> bool:
         return (batch_index + 1) % self.batches_per_update == 0
 
     @staticmethod
-    async def step(module: OfflineModule) -> OfflineModule:
+    async def _step(module: OfflineModule) -> OfflineModule:
         return await background(module.step)
 
-    async def train(self, module: OfflineModule, face: Face) -> OfflineModule:
-        state = self.get_starting_state(module)
-        async with (await self.load(face)) as dataset:
+    async def init(self) -> None:
+        self._lock = Lock()
+
+    async def _on_ended(self) -> None:
+        async with self._lock:
+            self._stop_requested = False
+
+    async def start(self, module: OfflineModule, face: Face) -> OfflineModule:
+        state = self._get_starting_state(module)
+        async with (await self._load(face)) as dataset:
             # epoch loop
-            while not self.should_stop(state):
+            while not await self._should_stop(state):
                 # batch loop
-                async for i, batch in aenumerate(self.iterate(dataset)):
-                    await self.fit(state.module, batch)
-                    if self.should_update(i):
-                        state.module = await self.step(state.module)
+                async for i, batch in aenumerate(self._iterate(dataset)):
+                    await self._fit(state.module, batch)
+                    if self._should_update(i):
+                        state.module = await self._step(state.module)
                         state.updates += 1
-                        if self.should_stop(state):
-                            return state.module
+                        if await self._should_stop(state):
+                            break
                 state.epochs += 1
+            await self._on_ended()
             return state.module
+
+    async def stop(self) -> None:
+        async with self._lock:
+            self._stop_requested = True
